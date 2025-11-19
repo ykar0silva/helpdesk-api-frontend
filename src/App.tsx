@@ -3,15 +3,14 @@ import { Routes, Route } from "react-router-dom";
 import { LoginPage } from "./pages/Login"; 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminTecnicos } from "./pages/AdminTecnicos";
+import { AdminClientes } from "./pages/AdminClientes";
+import { NovoChamado } from "./pages/NovoChamado";
+import { ClienteDashboard } from "./pages/ClienteDashboard";
+import { TecnicoDashboard } from "./pages/TecnicoDashboard";
+import { DetalhesChamado } from "./pages/DetalhesChamado";
 
-// --- Nossas Novas Páginas (temporárias) ---
 
-function TecnicoDashboard() {
-    return <h2>PAINEL DO TÉCNICO</h2>;
-}
-function ClienteDashboard() {
-    return <h2>PAINEL DO CLIENTE</h2>;
-}
 function HomePage() {
     return <h2>Home (Página Principal Protegida)</h2>;
 }
@@ -26,6 +25,12 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
         <Route path="/cliente/dashboard" element={<ClienteDashboard />} />
+        <Route path="/admin/tecnicos" element={<AdminTecnicos />} />
+        <Route path="/admin/clientes" element={<AdminClientes />} />
+        <Route path="/cliente/dashboard" element={<ClienteDashboard />} />
+         <Route path="/cliente/novo-chamado" element={<NovoChamado />} />
+         <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
+         <Route path="/chamados/:id" element={<DetalhesChamado />} />
       </Route>
     </Routes>
   )
