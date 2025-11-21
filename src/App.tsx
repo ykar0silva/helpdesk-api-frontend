@@ -9,7 +9,9 @@ import { NovoChamado } from "./pages/NovoChamado";
 import { ClienteDashboard } from "./pages/ClienteDashboard";
 import { TecnicoDashboard } from "./pages/TecnicoDashboard";
 import { DetalhesChamado } from "./pages/DetalhesChamado";
-
+import { AdminCategorias } from "./pages/AdminCategorias";
+import { AdminPagamentos } from "./pages/AdminPagamentos";
+import { AdminTecnicoPagamento } from "./pages/AdminTecnicoPagamento";
 
 function HomePage() {
     return <h2>Home (Página Principal Protegida)</h2>;
@@ -31,6 +33,9 @@ function App() {
          <Route path="/cliente/novo-chamado" element={<NovoChamado />} />
          <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
          <Route path="/chamados/:id" element={<DetalhesChamado />} />
+         <Route path="/admin/categorias" element={<AdminCategorias />} />
+          <Route path="/admin/pagamentos" element={<AdminPagamentos />} />
+          <Route path="/admin/tecnicos/:tecnicoId/pagamentos" element={<AdminTecnicoPagamento />} />
       </Route>
     </Routes>
   )

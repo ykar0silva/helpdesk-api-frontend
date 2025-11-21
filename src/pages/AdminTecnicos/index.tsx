@@ -1,7 +1,8 @@
 // src/pages/AdminTecnicos/index.tsx
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-import { Navbar } from "../../components/Navbar"; // Importa o menu
+import { Navbar } from "../../components/Navbar"; 
+import { useNavigate } from "react-router-dom"; // <-- Já estava importado!
 
 // Molde do Técnico (igual ao retorno do Java)
 interface Tecnico {
@@ -17,6 +18,8 @@ export function AdminTecnicos() {
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
+
+    const navigate = useNavigate(); // Inicializa o hook de navegação
 
     // 1. Função para carregar a lista (GET)
     const loadTecnicos = async () => {
@@ -38,7 +41,6 @@ export function AdminTecnicos() {
         e.preventDefault();
         try {
             // Enviamos o ID da empresa fixo como 1 por enquanto (para o MVP)
-            // Num sistema real, pegaríamos isso do token do Admin
             const payload = {
                 nome,
                 email,
@@ -64,7 +66,6 @@ export function AdminTecnicos() {
 
     return (
         <div>
-            {/* Adiciona o Menu no topo */}
             <Navbar />
 
             <div style={{ padding: '20px' }}>
@@ -92,12 +93,13 @@ export function AdminTecnicos() {
 
                 {/* --- Lista de Técnicos --- */}
                 <h3>Equipe Atual</h3>
-                <table border={1} style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <table border={1} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Nome</th>
                             <th>E-mail</th>
+                            <th>Ações</th> {/* <-- ADICIONADO */}
                         </tr>
                     </thead>
                     <tbody>
@@ -106,6 +108,14 @@ export function AdminTecnicos() {
                                 <td>{tecnico.id}</td>
                                 <td>{tecnico.nome}</td>
                                 <td>{tecnico.email}</td>
+                                <td style={{ padding: '5px' }}>
+                                    <button 
+                                        onClick={() => navigate(`/admin/tecnicos/${tecnico.id}/pagamentos`)}
+                                        style={{ background: '#007bff', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold' }}
+                                    >
+                                        💰 Gerenciar Pagamentos
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

@@ -25,6 +25,8 @@ export function Navbar() {
             <Link to="/admin/dashboard">Dashboard</Link>
             <Link to="/admin/tecnicos">Técnicos</Link>
             <Link to="/admin/clientes">Clientes</Link>
+            <Link to="/admin/categorias">Categorias</Link>
+            <Link to="/admin/pagamentos">Financeiro</Link>
 
             {/* Botão de Sair (jogado para a direita) */}
             <button onClick={handleLogout} style={{ marginLeft: 'auto' }}>

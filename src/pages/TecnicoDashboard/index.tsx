@@ -32,7 +32,7 @@ export function TecnicoDashboard() {
     // Estados do Modal de Fechamento
     const [modalAberto, setModalAberto] = useState(false);
     const [chamadoSelecionado, setChamadoSelecionado] = useState<number | null>(null);
-    
+
     // Estados do Formulário
     const [solucao, setSolucao] = useState("");
     const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -56,20 +56,26 @@ export function TecnicoDashboard() {
 
     const loadCategorias = async () => {
         try {
+            // 1. CHAMA CATEGORIAS (Correto)
             const response = await api.get('/api/categorias');
             setCategorias(response.data);
-            
-            // Tenta carregar subcategorias se o endpoint existir
-            try {
-                const subResponse = await api.get('/api/subcategorias');
-                setSubCategorias(subResponse.data);
-            } catch (e) { console.log("Sem subcategorias"); }
+
+            // 2. CORREÇÃO AQUI: A URL precisa do prefixo /categorias/subcategorias
+            const subResponse = await api.get('/api/categorias/subcategorias');
+            setSubCategorias(subResponse.data);
+
         } catch (error) {
-            // Mock data se falhar
-            setCategorias([{ id: 1, nome: "Hardware" }, { id: 2, nome: "Software" }]);
+            // Se a API FALHAR (403), usa os dados Mock para o desenvolvimento
+            console.warn("API de categorias falhou, usando dados locais.");
+            console.error("Erro detalhado:", error);
+            setCategorias([
+                { id: 1, nome: "Hardware" },
+                { id: 2, nome: "Software" }
+            ]);
             setSubCategorias([
                 { id: 1, nome: "Impressora", categoria: { id: 1 } },
-                { id: 2, nome: "Windows", categoria: { id: 2 } }
+                { id: 2, nome: "Monitor", categoria: { id: 1 } },
+                { id: 3, nome: "Windows", categoria: { id: 2 } }
             ]);
         }
     };
@@ -82,11 +88,11 @@ export function TecnicoDashboard() {
     const handleAssumir = async (idChamado: number) => {
         try {
             const token = localStorage.getItem('helpti_token');
-            if(!token) return;
+            if (!token) return;
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const payload = JSON.parse(window.atob(base64));
-            
+
             await api.put(`/api/chamados/${idChamado}/atender`, { tecnicoId: payload.id });
             alert("Chamado assumido!");
             loadChamados();
@@ -124,7 +130,7 @@ export function TecnicoDashboard() {
             <Navbar />
             <div style={{ padding: '20px' }}>
                 <h2>Fila de Atendimento</h2>
-                
+
                 {loading ? <p>Carregando...</p> : (
                     <table border={1} style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
                         <thead>
@@ -149,7 +155,7 @@ export function TecnicoDashboard() {
                                     </td>
                                     <td style={{ padding: '10px' }}>
                                         {/* --- MUDANÇA AQUI: BOTÃO VER DETALHES --- */}
-                                        <button 
+                                        <button
                                             onClick={() => navigate(`/chamados/${chamado.id}`)}
                                             style={{ background: '#6c757d', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px', marginRight: '5px' }}
                                         >
@@ -159,7 +165,7 @@ export function TecnicoDashboard() {
                                         {chamado.status === 'ABERTO' && (
                                             <button onClick={() => handleAssumir(chamado.id)} style={{ background: '#28a745', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px' }}>Atender</button>
                                         )}
-                                        
+
                                         {/* Mantivemos o botão rápido de finalizar, mas agora você também pode finalizar pela tela de detalhes */}
                                         {chamado.status === 'EM_ATENDIMENTO' && (
                                             <button onClick={() => abrirModalFinalizar(chamado.id)} style={{ background: '#007bff', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px' }}>Finalizar Rápido</button>
@@ -179,7 +185,7 @@ export function TecnicoDashboard() {
                             <form onSubmit={handleFinalizar} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <label>Solução:</label>
                                 <textarea value={solucao} onChange={e => setSolucao(e.target.value)} required rows={3} />
-                                
+
                                 <label>Categoria:</label>
                                 <select value={categoriaSelecionada} onChange={e => setCategoriaSelecionada(e.target.value)} required>
                                     <option value="">Selecione...</option>
