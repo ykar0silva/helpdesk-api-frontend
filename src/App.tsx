@@ -11,6 +11,7 @@ import { TecnicoDashboard } from "./pages/TecnicoDashboard";
 import { DetalhesChamado } from "./pages/DetalhesChamado";
 import { AdminCategorias } from "./pages/AdminCategorias";
 import { AdminPagamentos } from "./pages/AdminPagamentos";
+import { AdminChamados } from "./pages/AdminChamados";
 import { AdminTecnicoPagamento } from "./pages/AdminTecnicoPagamento";
 
 function HomePage() {
@@ -24,7 +25,7 @@ function App() {
       <Route path="/" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<HomePage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminChamados />} />
         <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
         <Route path="/cliente/dashboard" element={<ClienteDashboard />} />
         <Route path="/admin/tecnicos" element={<AdminTecnicos />} />
@@ -34,8 +35,8 @@ function App() {
          <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
          <Route path="/chamados/:id" element={<DetalhesChamado />} />
          <Route path="/admin/categorias" element={<AdminCategorias />} />
-          <Route path="/admin/pagamentos" element={<AdminPagamentos />} />
-          <Route path="/admin/tecnicos/:tecnicoId/pagamentos" element={<AdminTecnicoPagamento />} />
+        <Route path="/admin/pagamentos" element={<AdminPagamentos />} />
+        <Route path="/admin/tecnicos/:tecnicoId/pagamentos" element={<AdminTecnicoPagamento />} />
       </Route>
     </Routes>
   )
