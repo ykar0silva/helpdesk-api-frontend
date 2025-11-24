@@ -1,8 +1,5 @@
-/* =========================
-   global.css - Helpdesk UI
-   ========================= */
+@import "tailwindcss";
 
-/* Reset minimal (box sizing + base) */
 *,
 *::before,
 *::after {

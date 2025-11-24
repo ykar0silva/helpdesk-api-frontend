@@ -1,0 +1,89 @@
+/* ===== Reset leve ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== Corpo da página ===== */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+}
+
+/* ===== Container principal ===== */
+.bg-background {
+  background: #f5f5f5;
+}
+
+/* ===== Cartão central ===== */
+.max-w-sm {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Títulos ===== */
+.text-foreground {
+  color: #111;
+}
+
+.text-muted-foreground {
+  color: #666;
+}
+
+/* ===== Inputs ===== */
+input {
+  border: 1px solid #dcdcdc !important;
+  background: #fafafa !important;
+  transition: 0.2s ease;
+}
+
+input:focus {
+  border-color: #4b7bec !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 2px rgba(75, 123, 236, 0.25);
+}
+
+/* ===== Botão ===== */
+button {
+  background: #4b7bec;
+  color: #fff;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #3867d6;
+}
+
+/* ===== Links ===== */
+.text-primary {
+  color: #4b7bec;
+}
+
+.text-primary:hover {
+  color: #3867d6;
+}
+
+/* ===== Pequeno ajuste de espaçamento ===== */
+.space-y-8 > * + * {
+  margin-top: 2rem;
+}
+
+.space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.space-y-2 > * + * {
+  margin-top: .5rem;
+}
+
+/* ===== Card responsivo ===== */
+@media (max-width: 480px) {
+  .max-w-sm {
+    padding: 1.5rem;
+  }
+}
