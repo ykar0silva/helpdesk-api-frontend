@@ -52,7 +52,7 @@ export function LoginPage() {
             {/* LADO ESQUERDO - Imagem */}
             <div className="hidden lg:flex lg:basis-2/3 bg-gradient-to-br from-blue-500 via-blue-200 to-blue-50 relative animate-gradient"
                 style={{
-                    // backgroundImage: "url('/src/assets/images/other-bg.jpg')"
+                    backgroundImage: "url('/src/assets/images/bg-login.jpg')"
                 }}>
                  <div className="absolute inset-0 bg-black/40"></div>
 
