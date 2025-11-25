@@ -28,7 +28,7 @@ export function LoginPage() {
 
             const token = response.data.token;
             localStorage.setItem('helpti_token', token);
-            
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             const decoded = jwtDecode<JwtPayload>(token);
             const roles = decoded.roles;
 
