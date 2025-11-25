@@ -150,8 +150,8 @@ export function TecnicoDashboard() {
                         <thead>
                             <tr style={{ background: '#f0f0f0' }}>
                                 <th style={{ padding: '10px', textAlign: 'center' }}>Chamado</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>Cliente</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>Título</th>
+                                <th style={{ padding: '10px', textAlign: 'left' }}>Cliente</th> {/* ALINHA À ESQUERDA */}
+                                <th style={{ padding: '10px', textAlign: 'left' }}>Título</th> {/* ALINHA À ESQUERDA */}
                                 <th style={{ padding: '10px', textAlign: 'center' }}>Status</th>
                                 <th style={{ padding: '10px', textAlign: 'center' }}>Data Abertura</th>
                             </tr>
@@ -165,18 +165,17 @@ export function TecnicoDashboard() {
                                     onMouseEnter={() => setHoveredId(chamado.id)}
                                     onMouseLeave={() => setHoveredId(null)}
                                 >
-                                    <td style={{ padding: '10px' }}>{chamado.id}</td> {/* 1. CHAMADO ID */}
-                                    <td style={{ padding: '10px' }}>{chamado.cliente.nome}</td> {/* 2. CLIENTE */}
-                                    <td style={{ padding: '10px' }}>{chamado.titulo}</td> {/* 3. TÍTULO */}
-                                    <td style={{ padding: '10px' }}> {/* 4. STATUS */}
+                                    <td style={{ padding: '10px' }}>{chamado.id}</td> {/* 1. CHAMADO ID (CENTRO) */}
+                                    <td style={{ padding: '10px', textAlign: 'left' }}>{chamado.cliente.nome}</td> {/* 2. CLIENTE (ESQUERDA) */}
+                                    <td style={{ padding: '10px', textAlign: 'left' }}>{chamado.titulo}</td> {/* 3. TÍTULO (ESQUERDA) */}
+                                    <td style={{ padding: '10px' }}> {/* 4. STATUS (CENTRO) */}
                                         <span style={{ background: chamado.status === 'ABERTO' ? '#ffc107' : '#17a2b8', padding: '5px 10px', borderRadius: '15px', color: '#fff', fontSize: '12px' }}>
                                             {chamado.status}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '10px' }}> {/* 5. DATA ABERTURA */}
+                                    <td style={{ padding: '10px' }}> {/* 5. DATA ABERTURA (CENTRO) */}
                                         {new Date(chamado.dataAbertura).toLocaleDateString()}
                                     </td>
-                                    {/* A CÉLULA AÇÕES FOI REMOVIDA PARA SEMPRE */}
                                 </tr>
                             ))}
                         </tbody>
