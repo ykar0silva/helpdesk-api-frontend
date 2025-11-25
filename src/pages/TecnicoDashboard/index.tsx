@@ -27,7 +27,8 @@ interface SubCategoria {
 export function TecnicoDashboard() {
     const [chamados, setChamados] = useState<Chamado[]>([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate(); // <-- 2. INICIALIZA O NAVIGATE
+    const navigate = useNavigate();
+    const [hoveredId, setHoveredId] = useState<number | null>(null);
 
     // Estados do Modal de Fechamento
     const [modalAberto, setModalAberto] = useState(false);
@@ -41,14 +42,27 @@ export function TecnicoDashboard() {
     const [subCategoriaSelecionada, setSubCategoriaSelecionada] = useState("");
 
     const loadChamados = async () => {
+        const token = localStorage.getItem('helpti_token');
+        if (!token) return;
+
         try {
-            const response = await api.get('/api/chamados/empresa/1');
+            setLoading(true);
+
+            // 1. OBTÉM O ID DO TÉCNICO LOGADO (DE DENTRO DO TOKEN)
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(window.atob(base64));
+            const tecnicoId = payload.id; // ID do Técnico logado
+
+            // 2. CHAMA O ENDPOINT CORRETO: Filtrado por Técnico e Ativos
+            const response = await api.get(`/api/chamados/tecnico/${tecnicoId}/ativos`);
+
             if (Array.isArray(response.data)) {
-                const abertos = response.data.filter((c: Chamado) => c.status !== 'FECHADO');
-                setChamados(abertos);
+                // A API já retorna apenas os ativos atribuídos a este ID.
+                setChamados(response.data);
             }
         } catch (error) {
-            console.error("Erro ao buscar chamados", error);
+            console.error("Erro ao buscar chamados do técnico", error);
         } finally {
             setLoading(false);
         }
@@ -135,42 +149,34 @@ export function TecnicoDashboard() {
                     <table border={1} style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
                         <thead>
                             <tr style={{ background: '#f0f0f0' }}>
-                                <th style={{ padding: '10px' }}>ID</th>
-                                <th style={{ padding: '10px' }}>Cliente</th>
-                                <th style={{ padding: '10px' }}>Título</th>
-                                <th style={{ padding: '10px' }}>Status</th>
-                                <th style={{ padding: '10px' }}>Ação</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Chamado</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Cliente</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Título</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Status</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>Data Abertura</th>
                             </tr>
                         </thead>
                         <tbody>
                             {chamados.map(chamado => (
-                                <tr key={chamado.id} style={{ textAlign: 'center' }}>
-                                    <td style={{ padding: '10px' }}>{chamado.id}</td>
-                                    <td style={{ padding: '10px' }}>{chamado.cliente.nome}</td>
-                                    <td style={{ padding: '10px' }}>{chamado.titulo}</td>
-                                    <td style={{ padding: '10px' }}>
+                                <tr
+                                    key={chamado.id}
+                                    style={{ textAlign: 'center', cursor: 'pointer', transition: 'background-color 0.2s', backgroundColor: hoveredId === chamado.id ? 'rgba(239, 128, 0, 0.1)' : 'white' }}
+                                    onClick={() => navigate(`/chamados/${chamado.id}`)}
+                                    onMouseEnter={() => setHoveredId(chamado.id)}
+                                    onMouseLeave={() => setHoveredId(null)}
+                                >
+                                    <td style={{ padding: '10px' }}>{chamado.id}</td> {/* 1. CHAMADO ID */}
+                                    <td style={{ padding: '10px' }}>{chamado.cliente.nome}</td> {/* 2. CLIENTE */}
+                                    <td style={{ padding: '10px' }}>{chamado.titulo}</td> {/* 3. TÍTULO */}
+                                    <td style={{ padding: '10px' }}> {/* 4. STATUS */}
                                         <span style={{ background: chamado.status === 'ABERTO' ? '#ffc107' : '#17a2b8', padding: '5px 10px', borderRadius: '15px', color: '#fff', fontSize: '12px' }}>
                                             {chamado.status}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '10px' }}>
-                                        {/* --- MUDANÇA AQUI: BOTÃO VER DETALHES --- */}
-                                        <button
-                                            onClick={() => navigate(`/chamados/${chamado.id}`)}
-                                            style={{ background: '#6c757d', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px', marginRight: '5px' }}
-                                        >
-                                            👁️ Ver Detalhes
-                                        </button>
-
-                                        {chamado.status === 'ABERTO' && (
-                                            <button onClick={() => handleAssumir(chamado.id)} style={{ background: '#28a745', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px' }}>Atender</button>
-                                        )}
-
-                                        {/* Mantivemos o botão rápido de finalizar, mas agora você também pode finalizar pela tela de detalhes */}
-                                        {chamado.status === 'EM_ATENDIMENTO' && (
-                                            <button onClick={() => abrirModalFinalizar(chamado.id)} style={{ background: '#007bff', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px' }}>Finalizar Rápido</button>
-                                        )}
+                                    <td style={{ padding: '10px' }}> {/* 5. DATA ABERTURA */}
+                                        {new Date(chamado.dataAbertura).toLocaleDateString()}
                                     </td>
+                                    {/* A CÉLULA AÇÕES FOI REMOVIDA PARA SEMPRE */}
                                 </tr>
                             ))}
                         </tbody>
