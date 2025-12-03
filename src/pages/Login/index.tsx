@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import api from '../../services/api';
+import { Eye, EyeOff, X } from 'lucide-react';
 
 interface JwtPayload {
     sub: string;
@@ -14,6 +15,8 @@ export function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +31,7 @@ export function LoginPage() {
 
             const token = response.data.token;
             localStorage.setItem('helpti_token', token);
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
             const decoded = jwtDecode<JwtPayload>(token);
             const roles = decoded.roles;
 
@@ -47,120 +50,111 @@ export function LoginPage() {
     };
 
     return (
-        <div className="flex flex-row h-screen">
-            
-            {/* LADO ESQUERDO - Imagem */}
-            <div className="hidden lg:flex lg:basis-2/3 bg-gradient-to-br from-blue-500 via-blue-200 to-blue-50 relative animate-gradient"
-                style={{
-                    backgroundImage: "url('/src/assets/images/bg-login.jpg')"
-                }}>
-                 <div className="absolute inset-0 bg-black/40"></div>
+        <div className="flex flex-row 1/2 min-h-screen relative bg-cover bg-center bg-no-repeat" style={{backgroundImage: "url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80')"}}>
+      
+        <div className="absolute inset-0 bg-black/30"></div>
 
-                {/* Padrão decorativo */}
-                
-                
-            </div>
+        <div className='basis-1/2'>
+        </div>
 
-            {/* LADO DIREITO - Formulário */}
-            <div className="flex-1 lg:basis-1/3 flex justify-center items-center p-6 lg:p-10 bg-gray-50">
-                <div className="w-full max-w-md space-y-8">
-                    
-                    {/* Header Mobile */}
-                    <div className="text-center lg:hidden">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-2">Help TI</h2>
-                        <p className="text-gray-600">Sistema de Chamados</p>
+        <div className="basis-1/2 flex items-center justify-center min-h-screen place-items-center">
+
+            <div className="w-full h-full flex items-center justify-center ">
+                {/* Card de login flutuante */}
+                <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 relative animate-fade-in">
+
+                {/* Logo */}
+                <div className="flex justify-center mb-8">
+                    <img src="src/assets/images/logo-40.png" alt="logo helpti" />
+                </div>
+
+                {/* Título */}
+                <h2 className="text-2xl font-semibold text-gray-800 text-center mb-8 p-8 flex flex-col">
+                    Sign in
+                </h2>
+
+                {/* Formulário */}
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-8 2">
+                        Email or phone number
+                    </label>
+                    <input
+                        type="text"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                    />
                     </div>
 
-                    {/* Título do Form */}
-                    <div className="text-center">
-                        <h2 className="text-3xl font-bold text-gray-900">Bem-vindo de volta</h2>
-                        <p className="mt-2 text-gray-600">Entre com suas credenciais</p>
-                    </div>
-
-                    {/* Formulário */}
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                        
-                        {/* Campo Email */}
-                        <div>
-                            <label 
-                                htmlFor="email" 
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                                E-mail
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 hover:border-gray-400"
-                                placeholder="seu@email.com"
-                            />
-                        </div>
-
-                        {/* Campo Senha */}
-                        <div>
-                            <label 
-                                htmlFor="password" 
-                                className="block text-sm font-medium text-gray-700 mb-2"
-                            >
-                                Senha
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 hover:border-gray-400"
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        {/* Esqueceu a senha? */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <input
-                                    id="remember"
-                                    type="checkbox"
-                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                                    Lembrar-me
-                                </label>
-                            </div>
-                            <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                                Esqueceu a senha?
-                            </a>
-                        </div>
-
-                        {/* Botão Submit */}
+                    <div>
+                    <label className="block text-sm text-gray-600 mb-8 p-8">
+                        Password
+                    </label>
+                    <div className="relative">
+                        <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
+                        placeholder=""
+                        />
                         <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-blue-500 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
-                            {loading ? (
-                                <span className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Entrando...
-                                </span>
-                            ) : (
-                                'Entrar'
-                            )}
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
-                    </form>
+                    </div>
+                    </div>
 
-                    {/* Footer */}
-                    <div className="text-center text-sm text-gray-500">
-                        Sistema v1.0 • © 2024 Help TI
+                    {/* Sign in button */}
+                    <button
+                    onClick={handleSubmit}
+                    className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-all duration-200"
+                    >
+                    Sign in
+                    </button>
+
+                    {/* Remember me & Need help */}
+                    <div className="flex items-center justify-between text-sm">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span className="ml-2 text-gray-700">Remember me</span>
+                    </label>
+                    <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+                        Need help?
+                    </a>
                     </div>
                 </div>
+
+                {/* Sign up link */}
+                <div className="mt-6 text-center text-sm text-gray-600">
+                    Don't have an account?{' '}
+                    <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold">
+                    Sign up
+                    </a>
+                </div>
+
+                {/* reCAPTCHA notice */}
+                <p className="mt-6 text-xs text-gray-500 text-center leading-relaxed">
+                    This page is protected by Google reCAPTCHA to ensure you're not a bot.{' '}
+                    <a href="#" className="text-blue-600 hover:text-blue-700">
+                    Learn more
+                    </a>
+                    .
+                </p>
             </div>
         </div>
+
+        </div>
+    </div>
     );
 }
