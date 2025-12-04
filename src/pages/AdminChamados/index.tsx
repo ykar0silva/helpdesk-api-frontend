@@ -30,7 +30,7 @@ export function AdminChamados() {
 
         try {
             // CHAMA O NOVO ENDPOINT FILTRADO PELA EMPRESA
-            const response = await api.get(`/api/chamados/empresa/${empresaId}/ativos`);
+            const response = await api.get(`/api/chamados/empresa/${empresaId}/dashboard`);
             
             if (Array.isArray(response.data)) {
                 setChamados(response.data);

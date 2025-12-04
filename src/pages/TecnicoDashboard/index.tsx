@@ -55,7 +55,7 @@ export function TecnicoDashboard() {
             const tecnicoId = payload.id; // ID do Técnico logado
 
             // 2. CHAMA O ENDPOINT CORRETO: Filtrado por Técnico e Ativos
-            const response = await api.get(`/api/chamados/tecnico/${tecnicoId}/ativos`);
+            const response = await api.get(`/api/chamados/tecnico/${tecnicoId}/dashboard`);
 
             if (Array.isArray(response.data)) {
                 // A API já retorna apenas os ativos atribuídos a este ID.

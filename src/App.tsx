@@ -1,6 +1,6 @@
 // src/App.tsx
 import { Routes, Route } from "react-router-dom";
-import { LoginPage } from "./pages/Login"; 
+import { LoginPage } from "./pages/Login";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminTecnicos } from "./pages/AdminTecnicos";
 import { AdminClientes } from "./pages/AdminClientes";
@@ -10,11 +10,11 @@ import { TecnicoDashboard } from "./pages/TecnicoDashboard";
 import { DetalhesChamado } from "./pages/DetalhesChamado";
 import { AdminCategorias } from "./pages/AdminCategorias";
 import { AdminChamados } from "./pages/AdminChamados";
-import { AdminTecnicoPagamento } from "./pages/AdminTecnicoPagamento";
+import { AdminTecnicoDetalhes } from "./pages/AdminTecnicoDetalhes";
 import { AdminFinanceiroGeral } from "./pages/AdminFinanceiroGeral";
 
 function HomePage() {
-    return <h2>Home (Página Principal Protegida)</h2>;
+  return <h2>Home (Página Principal Protegida)</h2>;
 }
 // ---
 function App() {
@@ -30,12 +30,12 @@ function App() {
         <Route path="/admin/tecnicos" element={<AdminTecnicos />} />
         <Route path="/admin/clientes" element={<AdminClientes />} />
         <Route path="/cliente/dashboard" element={<ClienteDashboard />} />
-         <Route path="/cliente/novo-chamado" element={<NovoChamado />} />
-         <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
-         <Route path="/chamados/:id" element={<DetalhesChamado />} />
-         <Route path="/admin/categorias" element={<AdminCategorias />} />
+        <Route path="/cliente/novo-chamado" element={<NovoChamado />} />
+        <Route path="/tecnico/dashboard" element={<TecnicoDashboard />} />
+        <Route path="/chamados/:id" element={<DetalhesChamado />} />
+        <Route path="/admin/categorias" element={<AdminCategorias />} />
         <Route path="/admin/pagamentos" element={<AdminFinanceiroGeral />} />
-        <Route path="/admin/tecnicos/:tecnicoId/pagamentos" element={<AdminTecnicoPagamento />} />
+        <Route path="/admin/tecnicos/:tecnicoId" element={<AdminTecnicoDetalhes />} />
       </Route>
     </Routes>
   )

@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { Navbar } from "../../components/Navbar"; 
 import { useNavigate } from "react-router-dom"; 
-import { TecnicoFormModal } from "../../components/Tecnicos/TecnicoFormModal"; // <-- NOVO IMPORT
+import { TecnicoFormModal } from "../../components/Tecnicos/TecnicoFormModal";
 
-// Molde do Técnico (Completo, deve bater com o que a API retorna)
+// Molde do Técnico (CORRIGIDO COM SENHA OPCIONAL)
 interface Tecnico {
     id: number;
     nome: string;
     sobrenome?: string; 
     email: string;
+    senha?: string; // <-- ADICIONADO (Opcional para satisfazer a tipagem do Modal)
     cpf?: string;
     telefone?: string;
     especialidades?: string;
@@ -35,17 +36,13 @@ export function AdminTecnicos() {
             setTecnicos(response.data);
         } catch (error) {
             console.error("Erro ao carregar técnicos", error);
+            // Se der erro 403, é permissão. Se der erro de rede, é API fora.
         } finally {
             setLoading(false);
         }
     };
 
     // Handlers do Modal
-    const handleEditClick = (tecnico: Tecnico) => {
-        setTecnicoParaEditar(tecnico);
-        setIsModalOpen(true);
-    };
-
     const handleAddClick = () => {
         setTecnicoParaEditar(null); // Modo Cadastro
         setIsModalOpen(true);
@@ -56,15 +53,6 @@ export function AdminTecnicos() {
         setTecnicoParaEditar(null);
         loadTecnicos(); // Recarrega a lista após o sucesso
     };
-    
-    // TODO: Implementar a chamada DELETE
-    const handleDelete = (id: number) => {
-        if(window.confirm(`Tem certeza que deseja deletar o Técnico #${id}?`)){
-            alert("Ação de Deletar pendente!");
-            // TODO: Chamar a API DELETE /api/tecnicos/{id}
-        }
-    }
-
 
     useEffect(() => {
         loadTecnicos();
@@ -87,59 +75,37 @@ export function AdminTecnicos() {
                         + Novo Técnico
                     </button>
                 </div>
-                
-                {/* REMOVEMOS O FORMULÁRIO INLINE ANTIGO */}
 
-                {/* 2. LISTA DE TÉCNICOS (Atualizada com 6 colunas) */}
+                {/* 2. LISTA DE TÉCNICOS (Limpa e Clicável) */}
                 {loading ? <p>Carregando...</p> : (
                     <table border={1} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
                         <thead>
                             <tr style={{ background: '#f0f0f0' }}>
-                                <th>ID</th>
-                                <th>Nome Completo</th>
-                                <th>E-mail</th>
-                                <th>Telefone</th>
-                                <th>Status</th>
-                                <th>Ações</th>
+                                <th style={{ padding: 10 }}>ID</th>
+                                <th style={{ padding: 10, textAlign: 'left' }}>Nome Completo</th>
+                                <th style={{ padding: 10, textAlign: 'left' }}>E-mail</th>
+                                <th style={{ padding: 10 }}>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {tecnicos.map(tecnico => (
-                                <tr key={tecnico.id}>
-                                    <td>{tecnico.id}</td>
-                                    <td>{tecnico.nome} {tecnico.sobrenome}</td>
-                                    <td>{tecnico.email}</td>
-                                    <td>{tecnico.telefone || 'N/A'}</td>
-                                    <td>
-                                        <span style={{ 
-                                            background: tecnico.status === 'ATIVO' ? '#28a745' : '#dc3545',
-                                            color: 'white', padding: '5px 10px', borderRadius: '15px', fontSize: '12px'
-                                        }}>
-                                            {tecnico.status || 'N/A'}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '5px' }}>
-                                        {/* Botão Gerenciar Pagamentos */}
-                                        <button 
-                                            onClick={() => navigate(`/admin/tecnicos/${tecnico.id}/pagamentos`)}
-                                            style={{ background: '#007bff', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', marginRight: '5px' }}
-                                        >
-                                            💰 Pagamentos
-                                        </button>
-                                        
-                                        {/* Botão Editar (Abre o Modal) */}
-                                        <button 
-                                            onClick={() => handleEditClick(tecnico)}
-                                            style={{ background: '#ffc107', color: 'black', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', marginRight: '5px' }}
-                                        >
-                                            Editar
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDelete(tecnico.id)}
-                                            style={{ background: '#dc3545', color: 'white', border: 'none', padding: '8px 12px', cursor: 'pointer', borderRadius: '4px' }}
-                                        >
-                                            Excluir
-                                        </button>
+                                <tr 
+                                    key={tecnico.id}
+                                    style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                    onClick={() => navigate(`/admin/tecnicos/${tecnico.id}`)} // Vai para a Tela de Detalhes
+                                >
+                                    <td style={{ padding: 10 }}>{tecnico.id}</td>
+                                    <td style={{ padding: 10, textAlign: 'left' }}>{tecnico.nome} {tecnico.sobrenome}</td>
+                                    <td style={{ padding: 10, textAlign: 'left' }}>{tecnico.email}</td>
+                                    <td style={{ padding: 10 }}>
+                                         <span style={{ 
+                                             background: tecnico.status === 'ATIVO' ? '#28a745' : '#dc3545',
+                                             color: 'white', padding: '2px 10px', borderRadius: '15px', fontSize: '12px', fontWeight: 'bold'
+                                         }}>
+                                             {tecnico.status || 'N/A'}
+                                         </span>
                                     </td>
                                 </tr>
                             ))}
@@ -148,11 +114,11 @@ export function AdminTecnicos() {
                 )}
             </div>
 
-            {/* 3. O MODAL DE CADASTRO/EDIÇÃO */}
+            {/* 3. O MODAL DE CADASTRO (Só usado para Criar Novo aqui) */}
             <TecnicoFormModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSuccess={handleCloseModal} // Fechar e recarregar a lista
+                onSuccess={handleCloseModal}
                 initialData={tecnicoParaEditar}
             />
         </div>
