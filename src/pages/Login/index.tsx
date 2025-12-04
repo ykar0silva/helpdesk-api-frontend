@@ -63,96 +63,97 @@ export function LoginPage() {
                 {/* Card de login flutuante */}
                 <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-8 relative animate-fade-in">
 
-                {/* Logo */}
-                <div className="flex justify-center mb-8">
-                    <img src="src/assets/images/logo-40.png" alt="logo helpti" />
-                </div>
-
-                {/* Título */}
-                <h2 className="text-2xl font-semibold text-gray-800 text-center mb-8 p-8 flex flex-col">
-                    Sign in
-                </h2>
-
-                {/* Formulário */}
-                <div className="space-y-6">
-                    <div>
-                        <label className="block text-sm text-gray-600 mb-8 2">
-                        Email or phone number
-                    </label>
-                    <input
-                        type="text"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder=""
-                    />
+                    {/* Logo */}
+                    <div className="flex justify-center mb-8">
+                        <img src="src/assets/images/logo-40.png" alt="logo helpti" />
                     </div>
 
-                    <div>
-                    <label className="block text-sm text-gray-600 mb-8 p-8">
-                        Password
-                    </label>
-                    <div className="relative">
-                        <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
-                        placeholder=""
-                        />
+                    {/* Título */}
+                    <h2 className="text-2xl font-semibold text-gray-800 text-center mb-8 p-8 flex flex-col">
+                        Sign in
+                    </h2>
+
+                    {/* Formulário */}
+                    <div className="space-y-8">
+                        {/* div sem classe */}
+                        <div>
+                            <label className="block text-sm text-gray-600 mb-8 2">
+                            Email or phone number
+                            </label>
+                            <input
+                                type="text"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                placeholder=""
+                            />
+                        </div>
+                            
+                        <div >
+                            <label className="block text-sm text-gray-600 mb-8 p-8">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
+                                placeholder=""
+                                />
+                                <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Sign in button */}
                         <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        onClick={handleSubmit}
+                        className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-all duration-200"
                         >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        Sign in
                         </button>
-                    </div>
+
+                        {/* Remember me & Need help */}
+                        <div className="flex items-center justify-between text-sm">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                />
+                                <span className="ml-2 text-gray-700">Remember me</span>
+                            </label>
+                            <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+                                Need help?
+                            </a>
+                        </div>
                     </div>
 
-                    {/* Sign in button */}
-                    <button
-                    onClick={handleSubmit}
-                    className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-all duration-200"
-                    >
-                    Sign in
-                    </button>
-
-                    {/* Remember me & Need help */}
-                    <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center cursor-pointer">
-                        <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                        />
-                        <span className="ml-2 text-gray-700">Remember me</span>
-                    </label>
-                    <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
-                        Need help?
-                    </a>
+                    {/* Sign up link */}
+                    <div className="mt-6 text-center text-sm text-gray-600">
+                        Don't have an account?{' '}
+                        <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold">
+                        Sign up
+                        </a>
                     </div>
+
+                    {/* reCAPTCHA notice */}
+                    <p className="mt-6 text-xs text-gray-500 text-center leading-relaxed">
+                        This page is protected by Google reCAPTCHA to ensure you're not a bot.{' '}
+                        <a href="#" className="text-blue-600 hover:text-blue-700">
+                        Learn more
+                        </a>
+                        .
+                    </p>
                 </div>
-
-                {/* Sign up link */}
-                <div className="mt-6 text-center text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold">
-                    Sign up
-                    </a>
-                </div>
-
-                {/* reCAPTCHA notice */}
-                <p className="mt-6 text-xs text-gray-500 text-center leading-relaxed">
-                    This page is protected by Google reCAPTCHA to ensure you're not a bot.{' '}
-                    <a href="#" className="text-blue-600 hover:text-blue-700">
-                    Learn more
-                    </a>
-                    .
-                </p>
             </div>
-        </div>
 
         </div>
     </div>
