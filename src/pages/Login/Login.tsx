@@ -73,9 +73,10 @@ const Login = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-accent-orange/40" />
       </div>
 
+
       {/* Lado direito - Formulário de Login */}
-      <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-6 sm:p-12 bg-background">
-        <div className="w-full max-w-md animate-slide-in-right">
+      <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-8 sm:p-12 bg-background">
+        <div className="w-full max-w-md animate-slide-in-right space-y-6">
           {/* Logo e Título */}
           <div className="text-center mb-10">
             <div className="flex justify-center mb-6">
@@ -85,6 +86,9 @@ const Login = () => {
                 className="h-16 w-auto object-contain"
               />
             </div>
+            <div>
+              ㅤ
+            </div>
             <h1 className="font-display text-3xl font-bold text-foreground mb-2">
               Bem-vindo de volta
             </h1>
@@ -92,29 +96,36 @@ const Login = () => {
               Acesse sua conta para continuar
             </p>
           </div>
+          <div>
+            ㅤ
+          </div>
 
           {/* Formulário */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 mb-8">
             {/* Campo Email */}
             <div className="space-y-2">
               <label
                 htmlFor="email"
                 className="text-sm font-medium text-foreground"
               >
-                Email
+              Email
               </label>
               <div className="relative">
                 {/* <Mail className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" /> */}
                 <Input
                   id="email"
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder="  seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-12"
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              ㅤ
             </div>
 
             {/* Campo Senha */}
@@ -125,12 +136,12 @@ const Login = () => {
               >
                 Senha
               </label>
-              <div className="relative">
+              <div className="relative space-y-2">
                 {/* <Lock className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" /> */}
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="  ••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-12 pr-12"
@@ -149,7 +160,8 @@ const Login = () => {
                 </button>
               </div>
             </div>
-
+            
+            
             {/* Lembrar-me e Esqueceu a senha */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -161,7 +173,7 @@ const Login = () => {
                 />
                 <label
                   htmlFor="remember"
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                  className="rounded-full text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
                 >
                   Lembrar-me
                 </label>
@@ -173,15 +185,22 @@ const Login = () => {
                 Esqueceu a senha?
               </a>
             </div>
-
-            {/* Botão de Login */}
-            <Button type="submit" size="lg" disabled={loading} className="w-full" variant="default" onClick={handleSubmit}>
-              Entrar
-            </Button>
+            <div>
+              ㅤ
+            </div>
+            <div>
+              {/* Botão de Login */}
+              <Button type="submit" size="lg" disabled={loading} className="w-full" variant="default" onClick={handleSubmit}>
+                Entrar
+              </Button>
+            </div>
           </form>
-
+          
+          <div>
+              ㅤ
+          </div>
           {/* Link para criar conta */}
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center mb-8">
             <p className="text-muted-foreground">
               Não tem uma conta?{" "}
               <a
@@ -192,7 +211,12 @@ const Login = () => {
               </a>
             </p>
           </div>
-
+          <div>
+              ㅤ
+          </div>
+          <div>
+              ㅤ
+          </div>
           {/* Footer */}
           <div className="mt-12 text-center">
             <p className="text-xs text-muted-foreground">
