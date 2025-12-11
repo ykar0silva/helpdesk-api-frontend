@@ -1,6 +1,6 @@
 // src/App.tsx
 import { Routes, Route } from "react-router-dom";
-import { LoginPage } from "./pages/Login"; 
+import LoginPage from "./pages/Login/Index"; 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminTecnicos } from "./pages/AdminTecnicos";
 import { AdminClientes } from "./pages/AdminClientes";
