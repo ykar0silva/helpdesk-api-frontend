@@ -175,7 +175,7 @@ const Login = () => {
             </div>
 
             {/* Botão de Login */}
-            <Button type="submit" size="lg" className="w-full" variant="default" onClick={handleSubmit}>
+            <Button type="submit" size="lg" disabled={loading} className="w-full" variant="default" onClick={handleSubmit}>
               Entrar
             </Button>
           </form>
