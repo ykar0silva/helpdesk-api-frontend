@@ -12,6 +12,7 @@ import { AdminCategorias } from "./pages/AdminCategorias";
 import { AdminChamados } from "./pages/AdminChamados";
 import { AdminTecnicoDetalhes } from "./pages/AdminTecnicoDetalhes";
 import { AdminFinanceiroGeral } from "./pages/AdminFinanceiroGeral";
+import { RecuperarSenha } from "./pages/RecuperarSenha";
 
 function HomePage() {
   return <h2>Home (Página Principal Protegida)</h2>;
@@ -36,6 +37,7 @@ function App() {
         <Route path="/admin/categorias" element={<AdminCategorias />} />
         <Route path="/admin/pagamentos" element={<AdminFinanceiroGeral />} />
         <Route path="/admin/tecnicos/:tecnicoId" element={<AdminTecnicoDetalhes />} />
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
       </Route>
     </Routes>
   )

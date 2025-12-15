@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { jwtDecode } from "jwt-decode"; 
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react"; // Removi imports não usados (Mail, Lock)
 import logoHelpTI from "@/assets/images/h-logo-removebg-preview.png";
 import loginHero from "@/assets/images/login-hero.jpg";
 import api from '@/services/api';
@@ -20,17 +20,21 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // Estado para controlar a visibilidade do link
+  const [erroLogin, setErroLogin] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
+    // Reseta o erro ao tentar novamente
+    setErroLogin(false);
     setLoading(true);
-    // TODO: Implementar autenticação
 
     try{
         const response = await api.post('/api/login',{
             email,
-            senha:password
+            senha: password // Certifique-se que o DTO do Java espera "senha" e não "password"
         });
 
         const token = response.data.token;
@@ -48,16 +52,14 @@ const Login = () => {
         }
     }
     catch (error) {
+        console.error("Erro no login:", error);
+        setErroLogin(true); 
         alert("Erro ao fazer login. Verifique suas credenciais e tente novamente.");
-
     }
     finally {
         setLoading(false);
     }
-
   }; 
-
-
 
   return (
     <div className="min-h-screen flex">
@@ -71,7 +73,6 @@ const Login = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-accent-orange/40" />
       </div>
 
-
       {/* Lado direito - Formulário de Login */}
       <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-8 sm:p-12 bg-background">
         <div className="w-full max-w-md animate-slide-in-right space-y-6">
@@ -84,9 +85,7 @@ const Login = () => {
                 className="h-16 w-auto object-contain"
               />
             </div>
-            <div>
-              ㅤ
-            </div>
+            <div>ㅤ</div>
             <h1 className="font-display text-3xl font-bold text-foreground mb-2">
               Bem-vindo de volta
             </h1>
@@ -94,9 +93,7 @@ const Login = () => {
               Acesse sua conta para continuar
             </p>
           </div>
-          <div>
-            ㅤ
-          </div>
+          <div>ㅤ</div>
 
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-6 mb-8">
@@ -110,26 +107,23 @@ const Login = () => {
               Email
               </label>
               <div className="relative">
-                {/* <Mail className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" /> */}
                 <Input
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="ident-4 pl-12"
+                  className="ident-4 pl-4" // Ajustei padding (pl-12 estava muito grande sem ícone)
                   required
                 />
               </div>
             </div>
 
-            <div>
-              ㅤ
-            </div>
+            <div>ㅤ</div>
 
-            {/* Campo Senha */}
+            {/* Campo Senha e Link "Esqueceu a Senha" Condicional */}
             <div className="space-y-2">
-              <div className="grid justify-itens-stretch grid-cols-2">
+              <div className="grid justify-items-stretch grid-cols-2">
                 <label
                   htmlFor="password"
                   className="text-sm font-medium text-foreground"
@@ -137,22 +131,26 @@ const Login = () => {
                 >
                 Senha
                 </label>
-                <a
-                  href="#"
-                  className="justify-self-end-safe text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Esqueceu a senha?ㅤ
-                </a>
+                
+                {/* LÓGICA CONDICIONAL AQUI: Só aparece se errar o login */}
+                {erroLogin && (
+                    <span
+                      onClick={() => navigate('/recuperar-senha')}
+                      className="justify-self-end-safe text-sm text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
+                    >
+                      Esqueceu a senha?ㅤ
+                    </span>
+                )}
               </div>
+
               <div className="relative space-y-2">
-                {/* <Lock className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" /> */}
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12"
+                  className="pl-4" // Ajustei padding
                   required
                 />
                 <button
@@ -169,38 +167,32 @@ const Login = () => {
               </div>
             </div>
             
+            <div>ㅤ</div>
             
-            {/* Lembrar-me e Esqueceu a senha */}
-            
-            <div>
-              ㅤ
-            </div>
             <div>
               {/* Botão de Login */}
-              <Button type="submit" size="lg" disabled={loading} className="w-full" variant="default" onClick={handleSubmit}>
-                Entrar
+              <Button type="submit" size="lg" disabled={loading} className="w-full" variant="default">
+                {loading ? 'Entrando...' : 'Entrar'}
               </Button>
             </div>
           </form>
           
-          <div>
-              ㅤ
-          </div>
-          {/* Link para criar conta */}
+          <div>ㅤ</div>
+          
+          {/* Link para criar conta (Se quiser manter) */}
           <div className="mt-8 text-center mb-8">
             <p className="text-muted-foreground">
               Não tem uma conta?{" "}
               <a
-                href="#"
+                href="#" 
+                // Se futuramente tiver cadastro, mude para navigate('/cadastro')
                 className="text-primary hover:text-primary/80 font-semibold transition-colors"
               >
                 Criar conta
               </a>
             </p>
           </div>
-          <div className="">
-              ㅤ
-          </div>
+          <div>ㅤ</div>
         
           {/* Footer */}
           <div className="mt-12 text-center">
