@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import {useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import logoHelpTI from "@/assets/images/h-logo-removebg-preview.png";
 import loginHero from "@/assets/images/login-hero.jpg";
@@ -19,7 +18,6 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -107,6 +105,7 @@ const Login = () => {
               <label
                 htmlFor="email"
                 className="text-sm font-medium text-foreground"
+                style={{paddingLeft: '8px'}}
               >
               Email
               </label>
@@ -115,10 +114,10 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="  seu@email.com"
+                  placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12"
+                  className="ident-4 pl-12"
                   required
                 />
               </div>
@@ -130,21 +129,30 @@ const Login = () => {
 
             {/* Campo Senha */}
             <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-foreground"
-              >
+              <div className="grid justify-itens-stretch grid-cols-2">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-foreground"
+                  style={{paddingLeft: '8px'}}
+                >
                 Senha
-              </label>
+                </label>
+                <a
+                  href="#"
+                  className="justify-self-end-safe text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Esqueceu a senha?ㅤ
+                </a>
+              </div>
               <div className="relative space-y-2">
                 {/* <Lock className="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" /> */}
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="  ••••••••"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12"
+                  className="pl-12"
                   required
                 />
                 <button
@@ -163,28 +171,7 @@ const Login = () => {
             
             
             {/* Lembrar-me e Esqueceu a senha */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                />
-                <label
-                  htmlFor="remember"
-                  className="rounded-full text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                >
-                  Lembrar-me
-                </label>
-              </div>
-              <a
-                href="#"
-                className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-              >
-                Esqueceu a senha?
-              </a>
-            </div>
+            
             <div>
               ㅤ
             </div>
@@ -211,12 +198,10 @@ const Login = () => {
               </a>
             </p>
           </div>
-          <div>
+          <div className="">
               ㅤ
           </div>
-          <div>
-              ㅤ
-          </div>
+        
           {/* Footer */}
           <div className="mt-12 text-center">
             <p className="text-xs text-muted-foreground">
