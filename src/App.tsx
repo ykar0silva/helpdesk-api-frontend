@@ -13,6 +13,7 @@ import { AdminChamados } from "./pages/AdminChamados";
 import { AdminTecnicoDetalhes } from "./pages/AdminTecnicoDetalhes";
 import { AdminFinanceiroGeral } from "./pages/AdminFinanceiroGeral";
 import { RecuperarSenha } from "./pages/RecuperarSenha";
+import { RedefinirSenha } from "./pages/RedefinirSenha";
 
 function HomePage() {
   return <h2>Home (Página Principal Protegida)</h2>;
@@ -23,6 +24,8 @@ function App() {
     <Routes>
       {/* A rota de login é pública */}
       <Route path="/" element={<LoginPage />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+      <Route path="/recuperar-senha/:token" element={<RedefinirSenha />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<HomePage />} />
         <Route path="/admin/dashboard" element={<AdminChamados />} />
@@ -37,7 +40,6 @@ function App() {
         <Route path="/admin/categorias" element={<AdminCategorias />} />
         <Route path="/admin/pagamentos" element={<AdminFinanceiroGeral />} />
         <Route path="/admin/tecnicos/:tecnicoId" element={<AdminTecnicoDetalhes />} />
-        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
       </Route>
     </Routes>
   )
