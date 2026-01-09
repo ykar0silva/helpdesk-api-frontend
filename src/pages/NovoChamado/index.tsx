@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"; // Lógica do antigo
 import { Monitor, Wifi, Printer, Server, ArrowLeft, CheckCircle, Camera, MapPin, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import api from "../../services/api";
 import { LocationMap } from "@/components/LocationMap";
 
-// --- CONTAINER FORA DA FUNÇÃO (CRÍTICO PARA NÃO TRAVAR O MAPA) ---
+// Interface para pegar o ID do token (Igual ao código antigo)
+interface TokenPayload {
+    id: number;
+}
+
+// --- CONTAINER VISUAL (Visual Novo) ---
 const Container = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
         <div className="bg-white w-full max-w-5xl rounded-3xl shadow-xl overflow-hidden border border-gray-200 mx-auto">
             {children}
         </div>
@@ -20,18 +26,19 @@ export function NovoChamado() {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
 
+    // Estados
     const [categoria, setCategoria] = useState("");
     const [titulo, setTitulo] = useState("");
     const [descricao, setDescricao] = useState("");
-    const [prioridade, setPrioridade] = useState("MEDIA");
+    const [prioridade, setPrioridade] = useState("BAIXA"); // Padrão do antigo
     const [imagens, setImagens] = useState<File[]>([]);
     const [localizacao, setLocalizacao] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
 
     const categorias = [
-        { id: "HARDWARE", label: "Hardware & Computadores", icon: <Monitor className="w-6 h-6" />, desc: "Notebook não liga, tela azul, lentidão física." },
-        { id: "REDE", label: "Rede & Internet", icon: <Wifi className="w-6 h-6" />, desc: "Wi-Fi caiu, cabo desconectado, VPN." },
-        { id: "IMPRESSORA", label: "Impressoras & Scanners", icon: <Printer className="w-6 h-6" />, desc: "Papel atolado, toner, falha na digitalização." },
-        { id: "SERVIDOR", label: "Servidores & Cloud", icon: <Server className="w-6 h-6" />, desc: "Acesso a pastas, backup, firewall, sistemas." },
+        { id: "HARDWARE", label: "Hardware & Computadores", icon: <Monitor className="w-6 h-6" />, desc: "Notebook não liga, tela azul, lentidão." },
+        { id: "REDE", label: "Rede & Internet", icon: <Wifi className="w-6 h-6" />, desc: "Wi-Fi caiu, sem acesso ao sistema." },
+        { id: "IMPRESSORA", label: "Impressoras & Scanners", icon: <Printer className="w-6 h-6" />, desc: "Papel atolado, falha na impressão." },
+        { id: "SERVIDOR", label: "Servidores & Cloud", icon: <Server className="w-6 h-6" />, desc: "Acesso a pastas, backup, firewall." },
     ];
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,29 +49,66 @@ export function NovoChamado() {
         setImagens((prev) => prev.filter((_, i) => i !== index));
     };
 
+    // --- LÓGICA DE ENVIO DO CÓDIGO ANTIGO ADAPTADA ---
     async function handleSubmit() {
-        if (!titulo || !descricao) return alert("Preencha título e descrição.");
-        // Validação opcional de GPS
-        // if (!localizacao.lat) return alert("Aguarde o mapa carregar a localização.");
+        if (!categoria) return alert("Selecione uma categoria.");
+        if (!titulo.trim()) return alert("Preencha o título.");
+        if (!descricao.trim()) return alert("Preencha a descrição.");
+
+        // 1. Pegar Token e Decodificar (IGUAL AO ANTIGO)
+        const token = localStorage.getItem('helpti_token');
+        if (!token) {
+            alert("Erro de autenticação. Faça login novamente.");
+            return;
+        }
 
         setLoading(true);
+
         try {
+            const decoded = jwtDecode<TokenPayload>(token);
+            const clienteId = decoded.id; // ID extraído corretamente
+
+            // 2. Montar JSON com a estrutura do ANTIGO
+            const dadosChamado = {
+                titulo: titulo,
+                descricao: descricao, // ATENÇÃO: Era 'observacoes' no novo, mudei para 'descricao' igual o antigo
+                prioridade: prioridade,
+                cliente: { id: clienteId }, // ID vindo do token
+                empresa: { id: 1 },         // Obrigatório (estava faltando no novo)
+
+                // Campos novos (Se o backend ignorar, tudo bem. Se aceitar, melhor ainda)
+                categoria: categoria,
+                status: "ABERTO",
+                latitude: localizacao.lat,
+                longitude: localizacao.lng
+            };
+
             const formData = new FormData();
-            formData.append("titulo", titulo);
-            formData.append("observacoes", descricao);
-            formData.append("prioridade", prioridade);
-            formData.append("status", "ABERTO");
-            formData.append("categoria", categoria);
-            if (localizacao.lat) {
-                formData.append("latitude", localizacao.lat.toString());
-                formData.append("longitude", localizacao.lng!.toString());
+
+            // JSON Stringify no campo "chamado"
+            formData.append("chamado", JSON.stringify(dadosChamado));
+
+            // Anexos (Loop para suportar múltiplos, mas compatível com a lógica de multipart)
+            if (imagens.length > 0) {
+                imagens.forEach(file => {
+                    formData.append("anexos", file);
+                });
+            } else {
+                // Se seu backend exigir que o campo "anexos" exista mesmo vazio, descomente abaixo:
+                // formData.append("anexos", new Blob(), ''); 
             }
-            imagens.forEach((img) => formData.append("imagens", img));
-            await api.post("/chamados", formData);
-            setStep(3);
+
+            // 3. URL CORRETA (/api/chamados)
+            await api.post('/api/chamados', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            setStep(3); // Sucesso
         } catch (error) {
-            console.error(error);
-            alert("Erro ao abrir chamado.");
+            console.error("Erro ao abrir chamado", error);
+            alert("Erro ao enviar. Tente novamente.");
         } finally {
             setLoading(false);
         }
@@ -72,7 +116,7 @@ export function NovoChamado() {
 
     const catSelecionada = categorias.find(c => c.id === categoria);
 
-    // TELA 1
+    // --- TELA 1 (VISUAL NOVO) ---
     if (step === 1) {
         return (
             <Container>
@@ -108,7 +152,7 @@ export function NovoChamado() {
         );
     }
 
-    // TELA 2
+    // --- TELA 2 (VISUAL NOVO) ---
     if (step === 2) {
         return (
             <Container>
@@ -128,31 +172,36 @@ export function NovoChamado() {
                     <div className="grid gap-6">
                         <div>
                             <label className="text-sm font-bold text-gray-700 block mb-2">Título Resumido</label>
-                            <Input value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="Ex: Computador não liga..." className="h-12 text-base" />
+                            <Input
+                                value={titulo}
+                                onChange={e => setTitulo(e.target.value)}
+                                placeholder="Ex: Computador não liga..."
+                                className="h-12 text-base"
+                            />
                         </div>
                         <div>
                             <label className="text-sm font-bold text-gray-700 block mb-2">Descrição Detalhada</label>
-                            <textarea 
-                                value={descricao} 
-                                onChange={e => setDescricao(e.target.value)} 
-                                placeholder="Descreva o problema aqui..." 
-                                className="w-full min-h-[120px] p-4 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-y text-sm bg-gray-50 focus:bg-white transition-all" 
+                            <textarea
+                                value={descricao}
+                                onChange={e => setDescricao(e.target.value)}
+                                placeholder="Descreva o problema aqui..."
+                                className="w-full min-h-[120px] p-4 rounded-xl border border-gray-200 outline-none resize-y text-sm bg-gray-50 focus:bg-white transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                             />
                         </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 pt-6 border-t border-gray-100">
-                        {/* MAPA GOOGLE */}
+                        {/* MAPA */}
                         <div className="space-y-3">
                             <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
                                 <MapPin size={18} className="text-blue-600" /> Localização
                             </label>
-                            <div className="h-64 w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100 relative z-0 shadow-inner">
+                            <div className="h-64 w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100 relative z-0">
                                 <LocationMap onLocationSelect={(lat, lng) => setLocalizacao({ lat, lng })} />
                             </div>
-                            <p className="text-xs text-gray-500">* O Google Maps será usado para encontrar você.</p>
+                            <p className="text-xs text-gray-500">* Arraste o pino para ajustar.</p>
                         </div>
-                        
+
                         {/* FOTOS */}
                         <div className="space-y-3">
                             <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
@@ -184,13 +233,12 @@ export function NovoChamado() {
                                     <button
                                         key={prio}
                                         onClick={() => setPrioridade(prio)}
-                                        className={`h-12 rounded-xl font-bold text-xs tracking-wider border transition-all ${
-                                            prioridade === prio
-                                            ? prio === "ALTA" ? "bg-red-500 border-red-500 text-white" 
-                                            : prio === "MEDIA" ? "bg-orange-500 border-orange-500 text-white"
-                                            : "bg-green-500 border-green-500 text-white"
-                                            : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
-                                        }`}
+                                        className={`h-12 rounded-xl font-bold text-xs tracking-wider border transition-all ${prioridade === prio
+                                                ? prio === "ALTA" ? "bg-red-500 border-red-500 text-white"
+                                                    : prio === "MEDIA" ? "bg-orange-500 border-orange-500 text-white"
+                                                        : "bg-green-500 border-green-500 text-white"
+                                                : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                                            }`}
                                     >
                                         {prio}
                                     </button>
@@ -205,19 +253,36 @@ export function NovoChamado() {
             </Container>
         );
     }
-
-    // TELA 3
+    // --- TELA 3 (SUCESSO) ---
     return (
         <Container>
-            <div className="p-16 text-center max-w-lg mx-auto">
-                <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle size={40} />
+            {/* Wrapper que ocupa toda a largura e centraliza o conteúdo */}
+            <div className="w-full py-20 px-6 flex flex-col items-center justify-center text-center">
+
+                {/* Bloco de conteúdo com largura controlada */}
+                <div className="max-w-md w-full flex flex-col items-center space-y-8">
+
+                    {/* Ícone com animação suave */}
+                    <div className="w-24 h-24 bg-green-50 text-green-600 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+                        <CheckCircle size={48} strokeWidth={3} />
+                    </div>
+
+                    <div className="space-y-2">
+                        <h2 className="text-3xl font-bold text-gray-900">Chamado Aberto!</h2>
+                        <p className="text-gray-500 text-lg leading-relaxed">
+                            Sua solicitação foi enviada aos técnicos.<br />
+                            Acompanhe o status pelo painel.
+                        </p>
+                    </div>
+
+                    <Button
+                        className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md transition-all hover:scale-[1.02]"
+                        onClick={() => navigate('/cliente/dashboard')}
+                    >
+                        Voltar ao Painel
+                    </Button>
+
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Sucesso!</h2>
-                <p className="text-gray-500 mb-8">Técnicos notificados.</p>
-                <Button className="w-full h-12 text-base font-bold rounded-xl" onClick={() => navigate('/cliente/dashboard')}>
-                    Voltar ao Painel
-                </Button>
             </div>
         </Container>
     );
