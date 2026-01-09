@@ -13,6 +13,14 @@ interface Nota {
     autorTipo: string;
 }
 
+// Interface para os arquivos
+interface Anexo {
+    id: number;
+    urlArquivo: string; // Nome salvo no banco (UUID)
+    nomeOriginal: string;
+    tipoArquivo: string;
+}
+
 interface Chamado {
     id: number;
     titulo: string;
@@ -20,9 +28,14 @@ interface Chamado {
     status: string;
     prioridade: string;
     dataAbertura: string;
+    // Campos de GPS
+    latitude?: string;
+    longitude?: string;
     cliente: { nome: string; email: string; empresaDoCliente: string; };
     tecnico?: { id: number; nome: string; };
     notas: Nota[];
+    // Lista de Anexos (Adicionado)
+    anexos: Anexo[]; 
 }
 
 interface Tecnico {
@@ -30,12 +43,11 @@ interface Tecnico {
     nome: string;
 }
 
-// Interfaces que faltavam ser usadas no loadDados (embora não estritamente necessárias para o fetch, boas para tipagem se usasse)
 interface Categoria { id: number; nome: string; }
 interface SubCategoria { id: number; nome: string; categoria: { id: number }; }
 
 export function DetalhesChamado() {
-    const { id } = useParams(); // Pega o ID da URL
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const [chamado, setChamado] = useState<Chamado | null>(null);
@@ -46,7 +58,7 @@ export function DetalhesChamado() {
     const [mostrarTransferir, setMostrarTransferir] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // --- Estados do Modal (já estavam no seu código) ---
+    // Estados do Modal
     const [modalFinalizarAberto, setModalFinalizarAberto] = useState(false);
     const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [subCategorias, setSubCategorias] = useState<SubCategoria[]>([]);
@@ -82,31 +94,27 @@ export function DetalhesChamado() {
         loadDados();
     }, [id]);
 
-    // Envia uma nova nota (comentário)
     const handleEnviarNota = async () => {
         if (!novaNota.trim()) return;
-
         try {
-            // Pega quem está logado para registrar na nota
             const token = localStorage.getItem('helpti_token');
             const decoded: any = jwtDecode(token!);
-            const userRole = decoded.roles[0]; // Ex: ROLE_TECNICO
+            const userRole = decoded.roles[0];
             const userEmail = decoded.sub;
 
             await api.post(`/api/chamados/${id}/notas`, {
                 texto: novaNota,
-                autorNome: userEmail, // Usamos o email como nome por enquanto
-                autorTipo: userRole.replace('ROLE_', '') // Remove o prefixo ROLE_
+                autorNome: userEmail,
+                autorTipo: userRole.replace('ROLE_', '')
             });
 
-            setNovaNota(""); // Limpa o campo
-            loadDados(); // Recarrega para mostrar a nova nota na lista
+            setNovaNota("");
+            loadDados();
         } catch (error) {
             alert("Erro ao enviar nota.");
         }
     };
 
-    // Transfere o chamado para outro técnico
     const handleTransferir = async (tecnicoId: number) => {
         if (!tecnicoId) return;
         try {
@@ -119,7 +127,6 @@ export function DetalhesChamado() {
         }
     };
 
-    // --- NOVA AÇÃO: Fechar Chamado ---
     const handleFinalizar = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -179,8 +186,6 @@ export function DetalhesChamado() {
                                 👤 MUDAR PROPRIETÁRIO
                             </span>
 
-                            {/* --- BOTÃO NOVO ADICIONADO AQUI --- */}
-                            {/* Só mostra se não estiver fechado */}
                             {chamado.status !== 'FECHADO' && (
                                 <>
                                     <span>|</span>
@@ -191,7 +196,7 @@ export function DetalhesChamado() {
                             )}
                         </div>
 
-                        {/* Área de Transferência (Só aparece se clicar) */}
+                        {/* Área de Transferência */}
                         {mostrarTransferir && (
                             <div style={{ background: '#e9ecef', padding: '15px', borderBottom: '1px solid #ccc' }}>
                                 <label style={{ marginRight: 10 }}>Selecione o novo técnico:</label>
@@ -202,19 +207,69 @@ export function DetalhesChamado() {
                             </div>
                         )}
 
-                        {/* Timeline de Notas */}
+                        {/* Timeline */}
                         <div style={{ background: 'white', minHeight: '400px', border: '1px solid #ddd', borderTop: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
 
-                            {/* O Problema Original */}
+                            {/* O Problema Original + ANEXOS */}
                             <div style={{ padding: '20px', borderBottom: '1px solid #eee', background: '#fff8e1' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                                     <strong style={{ color: '#d35400' }}>Descrição do Problema</strong>
                                     <small>{chamado.cliente.nome}</small>
                                 </div>
                                 <p style={{ whiteSpace: 'pre-wrap' }}>{chamado.descricao}</p>
+
+                                {/* --- GALERIA DE ANEXOS --- */}
+                                {chamado.anexos && chamado.anexos.length > 0 && (
+                                    <div style={{ marginTop: '20px', borderTop: '1px solid #e0d8b0', paddingTop: '15px' }}>
+                                        <strong style={{ fontSize: '13px', color: '#8a6d3b', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                            📎 Anexos do Cliente ({chamado.anexos.length}):
+                                        </strong>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                                            {chamado.anexos.map(anexo => (
+                                                <a 
+                                                    key={anexo.id} 
+                                                    href={`http://localhost:8082/api/files/${anexo.urlArquivo}`} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    style={{ textDecoration: 'none' }}
+                                                >
+                                                    <div style={{ 
+                                                        width: '100px', 
+                                                        height: '100px', 
+                                                        border: '2px solid #fff', 
+                                                        borderRadius: '8px', 
+                                                        overflow: 'hidden', 
+                                                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                                                        background: 'white',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        {anexo.tipoArquivo.includes('image') ? (
+                                                            <img 
+                                                                src={`http://localhost:8082/api/files/${anexo.urlArquivo}`} 
+                                                                alt={anexo.nomeOriginal} 
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                                    (e.target as HTMLImageElement).parentElement!.innerText = '📄';
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span style={{ fontSize: '24px' }}>📄</span>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ fontSize: '10px', marginTop: 4, maxWidth: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#666' }}>
+                                                        {anexo.nomeOriginal}
+                                                    </div>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {/* ------------------------- */}
                             </div>
 
-                            {/* Lista de Respostas */}
                             {chamado.notas.map((nota) => (
                                 <div key={nota.id} style={{
                                     padding: '20px',
@@ -232,7 +287,6 @@ export function DetalhesChamado() {
                                 </div>
                             ))}
 
-                            {/* SE FECHADO: Mostrar Solução */}
                             {chamado.status === 'FECHADO' && (
                                 <div style={{ padding: '20px', background: '#d4edda', borderTop: '2px solid #28a745' }}>
                                     <strong>Solução Final:</strong>
@@ -240,7 +294,6 @@ export function DetalhesChamado() {
                                 </div>
                             )}
 
-                            {/* Área de Escrever Nova Nota (Só se aberto) */}
                             {chamado.status !== 'FECHADO' && (
                                 <div style={{ padding: '20px', background: '#f9f9f9', borderTop: '2px solid #eee' }}>
                                     <textarea
@@ -283,6 +336,48 @@ export function DetalhesChamado() {
                                     <span style={{ color: '#999' }}>Empresa:</span><br />
                                     <b>{chamado.cliente.empresaDoCliente}</b>
                                 </div>
+
+                                {/* --- BOTÃO DE MAPA --- */}
+                                {chamado.latitude && chamado.longitude ? (
+                                    <div style={{ marginTop: 15, paddingTop: 15, borderTop: '1px solid #eee' }}>
+                                        <span style={{ color: '#999' }}>Localização:</span>
+                                        <button
+                                            onClick={() => {
+                                                const url = `https://www.google.com/maps?q=${chamado.latitude},${chamado.longitude}`;
+                                                window.open(url, '_blank');
+                                            }}
+                                            style={{
+                                                marginTop: 5,
+                                                width: '100%',
+                                                padding: '10px',
+                                                background: '#fff',
+                                                border: '1px solid #007bff',
+                                                color: '#007bff',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                fontWeight: 'bold',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '6px',
+                                                transition: '0.2s'
+                                            }}
+                                            onMouseOver={(e) => e.currentTarget.style.background = '#f0f8ff'}
+                                            onMouseOut={(e) => e.currentTarget.style.background = '#fff'}
+                                        >
+                                            📍 Ir até o Cliente
+                                        </button>
+                                        <div style={{ fontSize: '10px', color: '#ccc', marginTop: 4, textAlign: 'center' }}>
+                                            GPS: {chamado.latitude}, {chamado.longitude}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ marginTop: 15, paddingTop: 15, borderTop: '1px solid #eee', color: '#aaa', fontStyle: 'italic', fontSize: '12px' }}>
+                                        📍 Localização não informada no chamado.
+                                    </div>
+                                )}
+                                {/* ----------------------- */}
+
                                 <hr style={{ margin: '15px 0', border: '0', borderTop: '1px solid #eee' }} />
                                 <div>
                                     <span style={{ color: '#999' }}>Proprietário Atual:</span><br />
@@ -295,6 +390,7 @@ export function DetalhesChamado() {
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 {/* --- MODAL DE FINALIZAÇÃO --- */}
