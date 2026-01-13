@@ -13,10 +13,9 @@ interface Nota {
     autorTipo: string;
 }
 
-// Interface para os arquivos
 interface Anexo {
     id: number;
-    urlArquivo: string; // Nome salvo no banco (UUID)
+    urlArquivo: string;
     nomeOriginal: string;
     tipoArquivo: string;
 }
@@ -28,13 +27,11 @@ interface Chamado {
     status: string;
     prioridade: string;
     dataAbertura: string;
-    // Campos de GPS
     latitude?: string;
     longitude?: string;
     cliente: { nome: string; email: string; empresaDoCliente: string; };
     tecnico?: { id: number; nome: string; };
     notas: Nota[];
-    // Lista de Anexos (Adicionado)
     anexos: Anexo[]; 
 }
 
@@ -52,6 +49,10 @@ export function DetalhesChamado() {
 
     const [chamado, setChamado] = useState<Chamado | null>(null);
     const [novaNota, setNovaNota] = useState("");
+    
+    // SEGURANÇA: isAllowedUser define quem pode ver botões de gestão (Admin/Técnico)
+    const [isAllowedUser, setIsAllowedUser] = useState(false);
+    const [userRoleForNote, setUserRoleForNote] = useState(""); 
 
     // Estados para a Transferência
     const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
@@ -69,18 +70,52 @@ export function DetalhesChamado() {
     const loadDados = async () => {
         try {
             setLoading(true);
+
+            // 1. LER TOKEN E DEFINIR PERMISSÕES
+            const token = localStorage.getItem('token') || localStorage.getItem('helpti_token');
+            let userIsAdminOrTech = false; 
+
+            if (token) {
+                try {
+                    const decoded: any = jwtDecode(token);
+                    
+                    const rawRole = decoded.roles?.[0] || decoded.role || "";
+                    const role = String(rawRole).toUpperCase();
+                    
+                    setUserRoleForNote(role);
+
+                    // Só libera se for explicitamente ADMIN ou TECNICO.
+                    if (role.includes("ADMIN") || role.includes("TECNICO")) {
+                        userIsAdminOrTech = true;
+                        setIsAllowedUser(true);
+                    } else {
+                        userIsAdminOrTech = false;
+                        setIsAllowedUser(false);
+                    }
+
+                } catch (e) {
+                    setIsAllowedUser(false);
+                }
+            }
+
+            // 2. Carrega o chamado
             const response = await api.get(`/api/chamados/${id}`);
             setChamado(response.data);
 
-            const techResponse = await api.get('/api/tecnicos/ativos');
-            setTecnicos(techResponse.data);
+            // 3. Só carrega listas (técnicos/categorias) se tiver permissão
+            if (userIsAdminOrTech) {
+                try {
+                    const techResponse = await api.get('/api/tecnicos/ativos');
+                    setTecnicos(techResponse.data);
 
-            try {
-                const catRes = await api.get('/api/categorias');
-                setCategorias(catRes.data);
-                const subRes = await api.get('/api/categorias/subcategorias');
-                setSubCategorias(subRes.data);
-            } catch (e) { console.warn("Erro ao carregar categorias"); }
+                    const catRes = await api.get('/api/categorias');
+                    setCategorias(catRes.data);
+                    const subRes = await api.get('/api/categorias/subcategorias');
+                    setSubCategorias(subRes.data);
+                } catch (e) { 
+                    // Silencioso se não tiver permissão ou erro de rede
+                }
+            }
 
         } catch (error) {
             console.error("Erro ao carregar dados", error);
@@ -97,15 +132,22 @@ export function DetalhesChamado() {
     const handleEnviarNota = async () => {
         if (!novaNota.trim()) return;
         try {
-            const token = localStorage.getItem('helpti_token');
-            const decoded: any = jwtDecode(token!);
-            const userRole = decoded.roles[0];
+            const token = localStorage.getItem('token') || localStorage.getItem('helpti_token');
+            if (!token) {
+                alert("Erro de autenticação. Faça login novamente.");
+                return;
+            }
+            
+            const decoded: any = jwtDecode(token);
             const userEmail = decoded.sub;
+
+            // Limpa o prefixo ROLE_ para salvar bonito no banco
+            const tipoLimpo = userRoleForNote.replace('ROLE_', '');
 
             await api.post(`/api/chamados/${id}/notas`, {
                 texto: novaNota,
                 autorNome: userEmail,
-                autorTipo: userRole.replace('ROLE_', '')
+                autorTipo: tipoLimpo
             });
 
             setNovaNota("");
@@ -178,26 +220,32 @@ export function DetalhesChamado() {
                             <span onClick={() => navigate(-1)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
                                 ⬅ VOLTAR
                             </span>
-                            <span>|</span>
-                            <span
-                                onClick={() => setMostrarTransferir(!mostrarTransferir)}
-                                style={{ cursor: 'pointer', color: '#007bff', display: 'flex', alignItems: 'center', gap: 5 }}
-                            >
-                                👤 MUDAR PROPRIETÁRIO
-                            </span>
-
-                            {chamado.status !== 'FECHADO' && (
+                            
+                            {/* LÓGICA DE SEGURANÇA: Só renderiza se for permitido */}
+                            {isAllowedUser && (
                                 <>
                                     <span>|</span>
-                                    <span onClick={() => setModalFinalizarAberto(true)} style={{ cursor: 'pointer', color: '#28a745', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                        ✅ FINALIZAR CHAMADO
+                                    <span
+                                        onClick={() => setMostrarTransferir(!mostrarTransferir)}
+                                        style={{ cursor: 'pointer', color: '#007bff', display: 'flex', alignItems: 'center', gap: 5 }}
+                                    >
+                                        👤 MUDAR PROPRIETÁRIO
                                     </span>
+
+                                    {chamado.status !== 'FECHADO' && (
+                                        <>
+                                            <span>|</span>
+                                            <span onClick={() => setModalFinalizarAberto(true)} style={{ cursor: 'pointer', color: '#28a745', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                                ✅ FINALIZAR CHAMADO
+                                            </span>
+                                        </>
+                                    )}
                                 </>
                             )}
                         </div>
 
-                        {/* Área de Transferência */}
-                        {mostrarTransferir && (
+                        {/* Área de Transferência (Só Admin/Técnico) */}
+                        {isAllowedUser && mostrarTransferir && (
                             <div style={{ background: '#e9ecef', padding: '15px', borderBottom: '1px solid #ccc' }}>
                                 <label style={{ marginRight: 10 }}>Selecione o novo técnico:</label>
                                 <select onChange={(e) => handleTransferir(Number(e.target.value))} style={{ padding: 5 }}>
@@ -267,9 +315,9 @@ export function DetalhesChamado() {
                                         </div>
                                     </div>
                                 )}
-                                {/* ------------------------- */}
                             </div>
 
+                            {/* Notas do Chamado */}
                             {chamado.notas.map((nota) => (
                                 <div key={nota.id} style={{
                                     padding: '20px',
@@ -294,6 +342,7 @@ export function DetalhesChamado() {
                                 </div>
                             )}
 
+                            {/* Área de Notas (Todos veem) */}
                             {chamado.status !== 'FECHADO' && (
                                 <div style={{ padding: '20px', background: '#f9f9f9', borderTop: '2px solid #eee' }}>
                                     <textarea
@@ -337,8 +386,8 @@ export function DetalhesChamado() {
                                     <b>{chamado.cliente.empresaDoCliente}</b>
                                 </div>
 
-                                {/* --- BOTÃO DE MAPA --- */}
-                                {chamado.latitude && chamado.longitude ? (
+                                {/* BOTÃO DE MAPA (SÓ ADMIN/TÉCNICO) */}
+                                {isAllowedUser && chamado.latitude && chamado.longitude ? (
                                     <div style={{ marginTop: 15, paddingTop: 15, borderTop: '1px solid #eee' }}>
                                         <span style={{ color: '#999' }}>Localização:</span>
                                         <button
@@ -371,12 +420,7 @@ export function DetalhesChamado() {
                                             GPS: {chamado.latitude}, {chamado.longitude}
                                         </div>
                                     </div>
-                                ) : (
-                                    <div style={{ marginTop: 15, paddingTop: 15, borderTop: '1px solid #eee', color: '#aaa', fontStyle: 'italic', fontSize: '12px' }}>
-                                        📍 Localização não informada no chamado.
-                                    </div>
-                                )}
-                                {/* ----------------------- */}
+                                ) : null}
 
                                 <hr style={{ margin: '15px 0', border: '0', borderTop: '1px solid #eee' }} />
                                 <div>
@@ -391,39 +435,38 @@ export function DetalhesChamado() {
                         </div>
                     </div>
 
-                </div>
+                    {/* --- MODAL DE FINALIZAÇÃO (SÓ ADMIN/TÉCNICO) --- */}
+                    {isAllowedUser && modalFinalizarAberto && (
+                        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                            <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
+                                <h3 style={{ marginTop: 0 }}>Finalizar Chamado</h3>
+                                <form onSubmit={handleFinalizar} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <label>Solução:</label>
+                                    <textarea value={solucao} onChange={e => setSolucao(e.target.value)} required rows={3} style={{ padding: 5 }} />
 
-                {/* --- MODAL DE FINALIZAÇÃO --- */}
-                {modalFinalizarAberto && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
-                            <h3 style={{ marginTop: 0 }}>Finalizar Chamado</h3>
-                            <form onSubmit={handleFinalizar} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <label>Solução:</label>
-                                <textarea value={solucao} onChange={e => setSolucao(e.target.value)} required rows={3} style={{ padding: 5 }} />
+                                    <label>Categoria:</label>
+                                    <select value={categoriaSelecionada} onChange={e => setCategoriaSelecionada(e.target.value)} required style={{ padding: 5 }}>
+                                        <option value="">Selecione...</option>
+                                        {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                                    </select>
 
-                                <label>Categoria:</label>
-                                <select value={categoriaSelecionada} onChange={e => setCategoriaSelecionada(e.target.value)} required style={{ padding: 5 }}>
-                                    <option value="">Selecione...</option>
-                                    {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                                </select>
+                                    <label>Tipo:</label>
+                                    <select value={subCategoriaSelecionada} onChange={e => setSubCategoriaSelecionada(e.target.value)} required style={{ padding: 5 }}>
+                                        <option value="">Selecione...</option>
+                                        {subCategorias
+                                            .filter(s => s.categoria && s.categoria.id === Number(categoriaSelecionada))
+                                            .map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                                    </select>
 
-                                <label>Tipo:</label>
-                                <select value={subCategoriaSelecionada} onChange={e => setSubCategoriaSelecionada(e.target.value)} required style={{ padding: 5 }}>
-                                    <option value="">Selecione...</option>
-                                    {subCategorias
-                                        .filter(s => s.categoria && s.categoria.id === Number(categoriaSelecionada))
-                                        .map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
-                                </select>
-
-                                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                    <button type="submit" style={{ flex: 1, background: '#28a745', color: 'white', padding: '10px', border: 'none', cursor: 'pointer' }}>Confirmar</button>
-                                    <button type="button" onClick={() => setModalFinalizarAberto(false)} style={{ flex: 1, background: '#ccc', padding: '10px', border: 'none', cursor: 'pointer' }}>Cancelar</button>
-                                </div>
-                            </form>
+                                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                        <button type="submit" style={{ flex: 1, background: '#28a745', color: 'white', padding: '10px', border: 'none', cursor: 'pointer' }}>Confirmar</button>
+                                        <button type="button" onClick={() => setModalFinalizarAberto(false)} style={{ flex: 1, background: '#ccc', padding: '10px', border: 'none', cursor: 'pointer' }}>Cancelar</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
