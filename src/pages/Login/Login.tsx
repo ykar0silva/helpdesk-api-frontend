@@ -34,20 +34,35 @@ const Login = () => {
         senha: password 
       });
 
-      const token = response.data.token;
+      console.log("🔍 Resposta do Login:", response.data); // Debug para ver o que chegou
+
+      const { token, nome, perfil, empresaNome, id } = response.data;
+
       localStorage.setItem('helpti_token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
-      const decoded = jwtDecode<JwtPayload>(token);
-      const roles = decoded.roles;
+      const userData = {
+        token,
+        nome,
+        email,
+        perfil,      
+        empresaNome,  
+        id
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      if (roles.includes("ROLE_ADMIN")) {
+      const decoded = jwtDecode<JwtPayload>(token);
+      const roles = decoded.roles || [];
+
+      if (roles.includes("ROLE_ADMIN") || perfil === "ADMIN") {
         navigate('/admin/dashboard');
-      } else if (roles.includes("ROLE_TECNICO")) {
+      } else if (roles.includes("ROLE_TECNICO") || perfil === "TECNICO") {
         navigate('/tecnico/dashboard');
       } else {
         navigate('/cliente/dashboard');
       }
+
     } catch (error) {
       console.error("Erro no login:", error);
       setErroLogin(true);
@@ -57,7 +72,7 @@ const Login = () => {
     }
   };
 
-  // Componente auxiliar para Espaçamento (substitui a div com caractere invisível)
+  // Componente auxiliar para Espaçamento
   const Spacer = () => <div className="h-6" />; 
 
   return (
@@ -86,7 +101,7 @@ const Login = () => {
               />
             </div>
             
-            <Spacer /> {/* Espaço extra igual ao original */}
+            <Spacer /> 
 
             <h1 className="font-display text-3xl font-bold text-foreground mb-2">
               Bem-vindo de volta
@@ -96,7 +111,7 @@ const Login = () => {
             </p>
           </div>
 
-          <Spacer /> {/* Espaço extra antes do formulário */}
+          <Spacer />
 
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="mb-8">
@@ -122,7 +137,7 @@ const Login = () => {
               </div>
             </div>
 
-            <Spacer /> {/* Espaço extra entre os campos */}
+            <Spacer />
 
             {/* Campo Senha */}
             <div className="space-y-2">
@@ -170,7 +185,7 @@ const Login = () => {
               </div>
             </div>
 
-            <Spacer /> {/* Espaço extra antes do botão */}
+            <Spacer />
 
             {/* Botão de Login */}
             <div>
@@ -186,7 +201,7 @@ const Login = () => {
             </div>
           </form>
 
-          <Spacer /> {/* Espaço extra antes do footer */}
+          <Spacer />
 
           {/* Footer / Links Extras */}
           <div className="text-center">
