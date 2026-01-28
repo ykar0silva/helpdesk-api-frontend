@@ -1,23 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  LogOut, 
-  Menu, 
-  LayoutDashboard, 
-  Users, 
-  Building2, 
-  Ticket,
-  UserCog
-} from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
+import { MENU_CONFIG } from "../../utils/menuConfig"; 
 
 export function Navbar() {
   const navigate = useNavigate();
 
-  // 1. FUNÇÃO PARA LER OS DADOS DO USUÁRIO (Direto do LocalStorage)
+  // 1. LEITURA DO USUÁRIO
   const getUserData = () => {
-    const userStr = localStorage.getItem("user"); // Ou "usuario", verifique como você salvou no Login
+    const userStr = localStorage.getItem("user"); // Verifique se é 'user' ou 'helpti_user'
     if (!userStr) return null;
     try {
       return JSON.parse(userStr);
+
     } catch (error) {
       return null;
     }
@@ -25,61 +19,33 @@ export function Navbar() {
 
   const user = getUserData();
 
-  // 2. FUNÇÃO DE LOGOUT MANUAL
+  // 2. LOGOUT
   const handleSignOut = () => {
-    localStorage.removeItem("user");  // Remove dados do usuário
-    localStorage.removeItem("token"); // Remove o token
-    navigate("/"); // Redireciona para o login
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
-  // 3. DEFINIÇÃO DO PERFIL E NOME DA EMPRESA
-  const perfil = user?.perfil || "CLIENTE"; 
+  // 3. DEFINIÇÃO DO PERFIL ATUAL
+  // Se o perfil não existir ou for nulo, assume CLIENTE por segurança
+  const perfil = user?.perfil || "CLIENTE";
   
-  // Lógica de exibição do nome da empresa
-  const nomeEmpresaDisplay = user?.empresaNome || (perfil === "ADMIN" ? "HelpTI Matriz" : "Minha Empresa");
+  // 4. SELEÇÃO DO MENU DINÂMICO
+  // Busca a lista baseada no perfil (ADMIN, PRESTADORA, GESTOR...). 
+  // Se não achar a chave, carrega o menu de CLIENTE.
+  const menuItensAtuais = MENU_CONFIG[perfil] || MENU_CONFIG["CLIENTE"];
 
-  // 4. CONFIGURAÇÃO DOS MENUS
-  const navItems = [
-    {
-      label: "Dashboard",
-      path: "/dashboard",
-      icon: LayoutDashboard,
-      roles: ["ADMIN", "GESTOR", "TECNICO"]
-    },
-    {
-      label: "Chamados",
-      path: "/chamados",
-      icon: Ticket,
-      roles: ["ADMIN", "GESTOR", "TECNICO", "CLIENTE"]
-    },
-    {
-      label: "Técnicos",
-      path: "/tecnicos",
-      icon: UserCog,
-      roles: ["ADMIN", "GESTOR"]
-    },
-    {
-      label: "Clientes",
-      path: "/clientes",
-      icon: Users,
-      roles: ["ADMIN", "GESTOR"]
-    },
-    {
-      label: "Empresas",
-      path: "/empresas",
-      icon: Building2,
-      roles: ["ADMIN"]
-    }
-  ];
+  // Lógica visual do nome da empresa
+  const nomeEmpresaDisplay = user?.empresaNome || (perfil === "ADMIN" ? "HelpTI Matriz" : "Minha Empresa");
 
   return (
     <nav className="bg-slate-900 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* LADO ESQUERDO: Logo e Nome da Empresa */}
+          {/* LADO ESQUERDO: Logo */}
           <div className="flex items-center gap-4">
-            <Link to="/home" className="flex items-center gap-2">
+            <Link to={menuItensAtuais[0]?.path || "/home"} className="flex items-center gap-2">
               <div className="bg-blue-600 p-2 rounded-lg">
                 <Menu size={20} className="text-white" />
               </div>
@@ -92,32 +58,28 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* CENTRO: Links de Navegação */}
+          {/* CENTRO: Menu Dinâmico */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              {navItems.map((item) => {
-                // Filtra o menu baseado no perfil salvo no localStorage
-                if (item.roles.includes(perfil)) {
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className="text-slate-300 hover:bg-slate-800 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
-                    >
-                      <item.icon size={16} />
-                      {item.label}
-                    </Link>
-                  );
-                }
-                return null;
-              })}
+              {/* AQUI É O PULO DO GATO: Renderizamos a lista que veio do Config */}
+              {menuItensAtuais.map((item, index) => (
+                <Link
+                  key={index} // Usei index ou path como chave
+                  to={item.path}
+                  className="text-slate-300 hover:bg-slate-800 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 transition-colors"
+                >
+                  {/* Renderiza o ícone que está salvo no objeto de configuração */}
+                  <item.icon size={16} />
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
-          {/* LADO DIREITO: Perfil e Logout */}
+          {/* LADO DIREITO: Perfil e Sair */}
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end mr-2">
-              <span className="text-sm font-medium">{user?.nome || "Usuário"}</span>
+              <span className="text-sm font-medium">{user?.nome || "Visitante"}</span>
               <span className="text-xs text-slate-400">{perfil}</span>
             </div>
             
